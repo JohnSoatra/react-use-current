@@ -2,20 +2,15 @@ import { MutationMethods } from "../constants";
 
 function mutationFunction(obj: any, key: string) {
   const list = MutationMethods.get(obj.constructor);
-
-  if (list) {
-    return list.includes(key);
-  }
-
-  return false;
+  return list ? list.includes(key) : false;
 }
 export function createProxy<T extends Record<string, any>>(
   content: T,
   reRender: () => void,
-  _cache: WeakMap<any, any> = new WeakMap(),
+  cache: WeakMap<any, any>,
 ) {
-  if (_cache.has(content)) {
-    return _cache.get(content);
+  if (cache.has(content)) {
+    return cache.get(content);
   };
 
   const proxy = new Proxy(content, {
@@ -24,7 +19,7 @@ export function createProxy<T extends Record<string, any>>(
 
       if (!(value === undefined || value === null)) {
         if (typeof value === 'object') {
-          return createProxy(value, reRender, _cache);
+          return createProxy(value, reRender, cache);
         } else if (typeof value === 'function') {
           if (typeof key === 'string' && mutationFunction(target, key)) {
             return function (...args: any[]) {
@@ -62,7 +57,7 @@ export function createProxy<T extends Record<string, any>>(
     }
   });
 
-  _cache.set(content, proxy);
+  cache.set(content, proxy);
 
   return proxy;
 }

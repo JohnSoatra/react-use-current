@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "author": "John Soatra",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/JohnSoatra/react-use-current"
