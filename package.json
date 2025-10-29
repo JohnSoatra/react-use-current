@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "author": "John Soatra",
+  "description": "A lightweight React hook for reactive state management.",
   "type": "module",
   "repository": {
     "type": "git",
@@ -44,10 +45,13 @@
   "keywords": [
     "react",
     "react-hooks",
-    "custom-hooks",
-    "react-current",
+    "custom-hook",
+    "state-management",
+    "proxy-state",
+    "react-state",
     "react-utilities",
+    "react-proxy",
     "use-current",
-    "proxy-current"
+    "react-use"
   ]
 }

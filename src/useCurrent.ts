@@ -4,7 +4,7 @@ import { createProxy } from './utils';
 export type Current<T> = {
   get current(): T;
   set current(value: T);
-  tick: number;
+  readonly tick: number;
 };
 
 function useCurrent<T>(initial: T): Current<T>;
