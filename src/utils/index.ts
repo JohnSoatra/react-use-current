@@ -1,6 +1,6 @@
 import { MutationMethods } from "../constants";
 
-function mutationFunction(obj: any, key: string) {
+function mutationMethod(obj: any, key: string) {
   const list = MutationMethods.get(obj.constructor);
   return list ? list.includes(key) : false;
 }
@@ -14,22 +14,22 @@ export function createProxy<T extends Record<string, any>>(
   };
 
   const proxy = new Proxy(content, {
-    get(target, key, receiver) {
-      let value = Reflect.get(target, key, receiver);
+    get(target, key) {
+      const value = Reflect.get(target, key);
 
       if (!(value === undefined || value === null)) {
         if (typeof value === 'object') {
           return createProxy(value, reRender, cache);
         } else if (typeof value === 'function') {
-          if (typeof key === 'string' && mutationFunction(target, key)) {
+          if (typeof key === 'string' && mutationMethod(target, key)) {
             return function (...args: any[]) {
               const result = (target as any)[key](...args);
               reRender();
               return result === target ? proxy : result;
             }
-          } else {
-            return (value as Function).bind(target);
           }
+
+          return (value as Function).bind(target);
         }
       }
 
@@ -37,19 +37,19 @@ export function createProxy<T extends Record<string, any>>(
     },
     set(target, key, value, receiver) {
       const currentValue = (target as any)[key];
-      const newValue = Reflect.set(target, key, value, receiver);
+      const result = Reflect.set(target, key, value, receiver);
 
-      if (currentValue !== value) {
+      if (currentValue !== value && result) {
         reRender();
       };
 
-      return newValue;
+      return result;
     },
     deleteProperty(target, key) {
       const hadKey = Object.prototype.hasOwnProperty.call(target, key);
       const result = Reflect.deleteProperty(target, key);
 
-      if (hadKey) {
+      if (hadKey && result) {
         reRender();
       };
 
