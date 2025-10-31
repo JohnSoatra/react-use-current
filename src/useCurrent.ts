@@ -1,32 +1,29 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { createProxy } from './utils';
+import { useCallback, useMemo, useState } from 'react';
+import createProxy from './utils/createProxy';
 
 export type Current<T> = {
   get current(): T;
   set current(value: T);
-  readonly tick: number;
+  readonly signal: {} | undefined;
 };
 
 function useCurrent<T>(initial: T): Current<T>;
 function useCurrent<T = undefined>(): Current<T | undefined>;
 function useCurrent<T>(initial?: T): Current<T | undefined> {
-  const [tick, setTick] = useState(0);
-  const timeout = useRef<NodeJS.Timeout>(undefined);
-  const packet = useMemo(() => ({ current: initial, tick }), []);
+  const [signal, setSignal] = useState<{}>();
+  const packet = useMemo(() => ({ current: initial, signal }), []);
   const cache = useMemo(() => new WeakMap(), []);
+  const cacheArray = useMemo(() => new WeakMap(), []);
 
   const reRender = useCallback(() => {
-    clearTimeout(timeout.current);
-    timeout.current = setTimeout(() => {
-      setTick(tick => {
-        const newTick = tick + 1;
-        packet.tick = newTick;
-        return newTick;
-      });
-    }, 25);
+    setSignal(() => {
+      const newSignal = Object.freeze({});
+      packet.signal = newSignal;
+      return newSignal;
+    });
   }, []);
 
-  return useMemo(() => createProxy(packet, reRender, cache), []);
+  return useMemo(() => createProxy(packet, reRender, cache, cacheArray), []);
 }
 
 export default useCurrent;
