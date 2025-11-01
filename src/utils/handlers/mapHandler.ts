@@ -20,23 +20,21 @@ export default function mapHandler(
     let newKey;
     let newValue;
 
-    if (creatable(prevKey)) {
-      if (!cacheProxy.has(prevKey)) {
-        newKey = createProxy(prevKey, reRender, cacheProxy, cacheShallow, false);
-        cacheProxy.set(newKey, newKey);
-      } else if (!isProxy(prevKey)) {
+    if (creatable(prevKey) && !isProxy(prevKey)) {
+      if (cacheProxy.has(prevKey)) {
         newKey = cacheProxy.get(prevKey);
+      } else {
+        newKey = createProxy(prevKey, reRender, cacheProxy, cacheShallow);
       }
     } else {
       newKey = prevKey;
     }
 
-    if (creatable(prevValue)) {
-      if (!cacheProxy.has(prevValue)) {
-        newValue = createProxy(prevValue, reRender, cacheProxy, cacheShallow, false);
-        cacheProxy.set(newValue, newValue);
-      } else if (!isProxy(prevValue)) {
+    if (creatable(prevValue) && !isProxy(prevValue)) {
+      if (cacheProxy.has(prevValue)) {
         newValue = cacheProxy.get(prevValue);
+      } else {
+        newValue = createProxy(prevValue, reRender, cacheProxy, cacheShallow);
       }
     } else {
       newValue = prevValue;

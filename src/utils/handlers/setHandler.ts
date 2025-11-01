@@ -17,16 +17,17 @@ export default function setHandler(
   }
 
   for (const each of shallow) {
-    if (creatable(each)) {
-      if (!cacheProxy.has(each)) {
-        const newValue = createProxy(each, reRender, cacheProxy, cacheShallow, true);
-        cacheProxy.set(newValue, newValue);
-        shallow.delete(each);
-        shallow.add(newValue);
-      } else if (!isProxy(each)) {
-        shallow.delete(each);
-        shallow.add(cacheProxy.get(each));
+    if (creatable(each) && !isProxy(each)) {
+      let newValue;
+
+      if (cacheProxy.has(each)) {
+        newValue = cacheProxy.get(each);
+      } else {
+        newValue = createProxy(each, reRender, cacheProxy, cacheShallow);
       }
+
+      shallow.delete(each);
+      shallow.add(newValue);
     }
   }
 

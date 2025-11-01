@@ -1,36 +1,40 @@
-import { mutationMethod } from "./utils";
+import { isArray, isProxy, mutationMethod } from "./utils";
+import Symbols from "../constants/symbols";
+import Keys from "../constants/keys";
 import arrayHandler from "./handlers/arrayHandler";
-import getHandler from "./handlers/getHandler";
 import mapHandler from "./handlers/mapHandler";
 import setHandler from "./handlers/setHandler";
-import hasHandler from "./handlers/hasHandler";
-import Labels from "../constants/labels";
+import mutationHandler from "./handlers/mutationHandler";
+import getWeakMapHandler from "./handlers/getWeakHandler";
+import hasWeakMapHandler from "./handlers/hasWeakHandler";
+import deleteWeakMapHandler from "./handlers/deleteWeakHandler";
+import defaultHandler from "./handlers/defaultHandler";
 
 export type ReRender = () => void;
-export type CacheProxy = WeakMap<any, any>;
-export type CacheShallow = WeakMap<any, any>;
+export type CacheProxy = WeakMap<object, any>;
+export type CacheShallow = WeakMap<object, any>;
 
 export default function createProxy<T extends Record<string, any>>(
   content: T,
   reRender: ReRender,
   cacheProxy: CacheProxy,
   cacheShallow: CacheShallow,
-  saveProxy?: boolean
 ) {
-  if (cacheProxy.has(content)) {
-    saveProxy && console.log('in has', content);
+  if (isProxy(content)) {
+    return content;
+  } else if (cacheProxy.has(content)) {
     return cacheProxy.get(content);
   };
 
-  saveProxy && console.log('no has', content);
-
   const proxy = new Proxy(content, {
-    get(target, key, receiver) {
-      if (key === Labels.IsProxy) {
+    get(target: any, key, receiver) {
+      if (key === Symbols.IsProxy) {
         return true;
+      } else if (key === Symbols.RawObject) {
+        return content;
       }
 
-      let value;
+      let value: any;
 
       try {
         value = Reflect.get(target, key, receiver);
@@ -38,50 +42,60 @@ export default function createProxy<T extends Record<string, any>>(
         value = Reflect.get(target, key);
       }
 
-      if (!(value === undefined || value === null)) {
-        if (Array.isArray(value)) {
+      if (
+        !(value === undefined || value === null) &&
+        (
+          isArray(value) ||
+          typeof value === 'object' ||
+          typeof value === 'function'
+        )
+      ) {
+        if (isArray(value)) {
           return arrayHandler(value, reRender, cacheProxy, cacheShallow);
         } else if (typeof value === 'object') {
-          if ((value as any) instanceof Map) {
+          if (value instanceof Map) {
             return mapHandler(value, reRender, cacheProxy, cacheShallow);
           }
-          if ((value as any) instanceof Set) {
+          if (value instanceof Set) {
             return setHandler(value, reRender, cacheProxy, cacheShallow);
           }
           return createProxy(value, reRender, cacheProxy, cacheShallow);
-        } else if (typeof value === 'function') {
-          if (typeof key === 'string') {
-            if (mutationMethod(target, key)) {
-              return function (...args: any[]) {
-                const result = (target as any)[key](...args);
-                reRender();
-                return result === target ? proxy : result;
-              }
-            } else if (
-              key === 'get' &&
-              (target instanceof Map || target instanceof Set)
-            ) {
-              return function (getKey: any) {
-                return getHandler(target as any, getKey, reRender, cacheProxy, cacheShallow);
-              }
-            } else if (
-              key === 'has' &&
-              (target instanceof Map || target instanceof Set || target instanceof WeakMap || target instanceof WeakSet)
-            ) {
-              return function (item: any) {
-                return hasHandler(target as any, item, reRender, cacheProxy, cacheShallow);
-              }
+        }
+        if (typeof key === 'string') {
+          if (key === Keys.Get && value instanceof WeakMap) {
+            return function (getKey: any) {
+              return getWeakMapHandler(target, getKey, reRender, cacheProxy, cacheShallow);
+            }
+          } else if (
+            key === Keys.Has &&
+            (value instanceof WeakMap || value instanceof WeakSet)
+          ) {
+            return function (hasKey: any) {
+              return hasWeakMapHandler(target, hasKey, reRender, cacheProxy, cacheShallow);
+            }
+          } else if (
+            key === Keys.Delete &&
+            (value instanceof WeakMap || value instanceof WeakSet)
+          ) {
+            return function (deleteKey: any) {
+              return deleteWeakMapHandler(target, deleteKey, reRender, cacheProxy, cacheShallow);
+            }
+          } else if (mutationMethod(target, key)) {
+            return function (...args: any[]) {
+              return mutationHandler(proxy, target, key, reRender, cacheProxy, cacheShallow, ...args);
             }
           }
+        }
 
-          return (value as Function).bind(target);
+        return function (...args: any[]) {
+          return defaultHandler(proxy, target, key, reRender, cacheProxy, cacheShallow, ...args);
         }
       }
 
       return value;
     },
     set(target, key, value, receiver) {
-      const currentValue = (target as any)[key];
+      const currentValue = target[key];
       const result = Reflect.set(target, key, value, receiver);
 
       if (currentValue !== value && result) {
@@ -102,9 +116,7 @@ export default function createProxy<T extends Record<string, any>>(
     }
   });
 
-  // if (saveProxy ?? true) {
-  //   cacheProxy.set(content, proxy);
-  // }
+  cacheProxy.set(content, proxy);
 
   return proxy;
 }
