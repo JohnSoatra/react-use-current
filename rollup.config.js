@@ -23,7 +23,7 @@ export default [
       typescript({ declaration: false }),
       terser(),
     ],
-    external: ["react", "react-dom"],
+    external: ["react", "react-dom", "vref"],
   },
   // Types bundle
   {
