@@ -35,18 +35,21 @@ function useCurrent<T = undefined>(): Current<T | undefined>;
 function useCurrent<T>(initial?: T): Current<T | undefined> {
   const [signal, setSignal] = useState(Symbol());
   const signalRef = useRef(signal);
-  const reRender = useCallback(() => {
+  const handleChange = useCallback(() => {
     setSignal(() => {
       const newSignal = Symbol();
       signalRef.current = newSignal;
       return newSignal;
     });
   }, []);
-  return useMemo(() => new Proxy(ref(initial, reRender), {
+  return useMemo(() => new Proxy(ref(initial, handleChange), {
     get(target, key, receiver) {
-      if (key === Updated) {
-        return signalRef.current;
+      if (key === 'track') {
+        return trackHandler;
       }
+      // if (key === Updated) {
+      //   return signalRef.current;
+      // }
       return Reflect.get(target, key, receiver);
     },
     set(target, key, newValue, receiver) {
