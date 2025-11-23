@@ -21,8 +21,10 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -c -w"
+    "clean": "rimraf dist",
+    "build:dev": "rollup -c --environment env:dev",
+    "build": "npm run clean && rollup -c --environment env:prod",
+    "watch": "rollup -c -w --environment env:dev"
   },
   "peerDependencies": {
     "react": ">=17",
@@ -36,11 +38,13 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
     "chokidar": "^4.0.3",
+    "rimraf": "^6.1.2",
     "rollup": "^4.52.4",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-dts": "^6.2.3",
     "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vref": "latest"
   },
   "keywords": [
     "react",

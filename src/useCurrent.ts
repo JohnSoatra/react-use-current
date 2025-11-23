@@ -1,8 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import ref from 'vref';
-import ReadonlyError from './classes/ReadonlyError';
-import { Updated } from './constants/symbols';
-import { Current } from './types';
+import { RefObject, useCallback, useMemo, useRef, useState } from 'react';
+import ref, { ChangeEvent, Ref, getRaw } from 'vref';
 
 /**
  * React hook that creates a reactive ref-like state object.
@@ -28,37 +25,37 @@ import { Current } from './types';
  * ```
  *
  * @param initial Optional initial value.
- * @returns A reactive `Current<T>` object with a `.value` property.
+ * @returns A reactive `Ref<T>` object with a `.value` property.
  */
-function useCurrent<T>(initial: T): Current<T>;
-function useCurrent<T = undefined>(): Current<T | undefined>;
-function useCurrent<T>(initial?: T): Current<T | undefined> {
-  const [signal, setSignal] = useState(Symbol());
-  const signalRef = useRef(signal);
-  const handleChange = useCallback(() => {
-    setSignal(() => {
-      const newSignal = Symbol();
-      signalRef.current = newSignal;
-      return newSignal;
-    });
-  }, []);
-  return useMemo(() => new Proxy(ref(initial, handleChange), {
-    get(target, key, receiver) {
-      if (key === 'track') {
-        return trackHandler;
+function useCurrent<T>(initial: T): Ref<T>;
+function useCurrent<T = undefined>(): Ref<T | undefined>;
+function useCurrent<T>(initial?: T): Ref<T | undefined> {
+  const [_, setSignal] = useState(Symbol());
+  const cache = useRef(new WeakMap());
+  const current = useMemo(() => new Proxy(
+    ref(
+      initial,
+      (evt) => handleChange(cache, current, evt, setSignal),
+      { cache: cache.current }
+    ), {
+    get(target, p, receiver) {
+      if (p === 'cache') {
+        return cache;
       }
-      // if (key === Updated) {
-      //   return signalRef.current;
-      // }
-      return Reflect.get(target, key, receiver);
+      return Reflect.get(target, p, receiver);
     },
-    set(target, key, newValue, receiver) {
-      if (key === Updated) {
-        throw new ReadonlyError(key);
-      }
-      return Reflect.set(target, key, newValue, receiver);
-    },
-  }) as any, []);
+  }), []);
+  return current;
+}
+function handleChange(
+  cache: RefObject<WeakMap<any, any>>,
+  current: Ref<any>,
+  event: ChangeEvent,
+  setSignal: Function,
+) {
+  cache.current.delete(getRaw(current.value));
+  cache.current.delete(getRaw(event.target));
+  setSignal(Symbol());
 }
 
 export default useCurrent;
