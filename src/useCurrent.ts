@@ -1,5 +1,6 @@
-import { RefObject, useCallback, useMemo, useRef, useState } from 'react';
-import ref, { ChangeEvent, Ref, getRaw } from 'vref';
+import { useMemo, useRef, useState } from 'react';
+import ref, { Ref } from 'vref';
+import handleChange from './utils/handleChange';
 
 /**
  * React hook that creates a reactive ref-like state object.
@@ -31,31 +32,23 @@ function useCurrent<T>(initial: T): Ref<T>;
 function useCurrent<T = undefined>(): Ref<T | undefined>;
 function useCurrent<T>(initial?: T): Ref<T | undefined> {
   const [_, setSignal] = useState(Symbol());
-  const cache = useRef(new WeakMap());
-  const current = useMemo(() => new Proxy(
-    ref(
-      initial,
-      (evt) => handleChange(cache, current, evt, setSignal),
-      { cache: cache.current }
-    ), {
-    get(target, p, receiver) {
-      if (p === 'cache') {
-        return cache;
-      }
-      return Reflect.get(target, p, receiver);
-    },
-  }), []);
-  return current;
-}
-function handleChange(
-  cache: RefObject<WeakMap<any, any>>,
-  current: Ref<any>,
-  event: ChangeEvent,
-  setSignal: Function,
-) {
-  cache.current.delete(getRaw(current.value));
-  cache.current.delete(getRaw(event.target));
-  setSignal(Symbol());
+  const cache = useRef(new WeakMap<object, object>());
+  const cacheParents = useRef(new WeakMap<object, Set<any>>());
+  const rootRef = useMemo(() => ref(
+    initial,
+    (evt) => handleChange(
+      evt,
+      rootRef,
+      cache,
+      cacheParents,
+      setSignal
+    ),
+    {
+      cache: cache.current,
+      cacheParents: cacheParents.current
+    }
+  ), []);
+  return rootRef;
 }
 
 export default useCurrent;
