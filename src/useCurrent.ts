@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
-import ref, { Ref } from 'vref';
-import handleChange from './utils/handleChange';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import ref, { getRaw, Ref } from 'vref';
+import { findRawParents } from './utils';
+import { Current } from './types';
 
 /**
  * React hook that creates a reactive ref-like state object.
@@ -28,26 +29,45 @@ import handleChange from './utils/handleChange';
  * @param initial Optional initial value.
  * @returns A reactive `Ref<T>` object with a `.value` property.
  */
-function useCurrent<T>(initial: T): Ref<T>;
-function useCurrent<T = undefined>(): Ref<T | undefined>;
-function useCurrent<T>(initial?: T): Ref<T | undefined> {
-  const [_, setSignal] = useState(Symbol());
+function useCurrent<T>(initial: T): Current<T>;
+function useCurrent<T = undefined>(): Current<T | undefined>;
+function useCurrent<T>(initial?: T): Current<T | undefined> {
+  const [signal, setSignal] = useState(Symbol());
   const cache = useRef(new WeakMap<object, object>());
   const cacheParents = useRef(new WeakMap<object, Set<any>>());
+  const updated = useRef(new Set<object>());
+
   const rootRef = useMemo(() => ref(
     initial,
-    (evt) => handleChange(
-      evt,
-      rootRef,
-      cache,
-      cacheParents,
-      setSignal
-    ),
+    (evt) => {
+      updated.current.add(evt.target);
+      setSignal(Symbol());
+    },
     {
       cache: cache.current,
       cacheParents: cacheParents.current
     }
   ), []);
+
+  useEffect(() => {
+    return () => {
+      updated.current.forEach(target => {
+        const rawRootRef = getRaw(rootRef);
+        const rawTarget = getRaw(target);
+        const rawParents = findRawParents(
+          rawTarget,
+          cacheParents.current
+        );
+        cache.current.delete(rawTarget);
+        rawParents.delete(rawRootRef);
+        rawParents.forEach(rawParent => {
+          cache.current.delete(rawParent);
+        });
+      });
+      updated.current.clear();
+    }
+  }, [signal]);
+
   return rootRef;
 }
 

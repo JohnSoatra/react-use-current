@@ -1,3 +1,3 @@
-export type Current<T> = {
-  value: T;
-};
+import { Ref } from "vref";
+
+export type Current<T> = Ref<T>;
