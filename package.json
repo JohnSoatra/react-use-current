@@ -1,6 +1,6 @@
 {
   "name": "react-use-current",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "license": "MIT",
   "author": "John Soatra",
   "description": "A lightweight React hook for reactive state management.",
