@@ -43,8 +43,7 @@
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-dts": "^6.2.3",
     "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.9.3",
-    "vref": "latest"
+    "typescript": "^5.9.3"
   },
   "keywords": [
     "react",
@@ -57,5 +56,8 @@
     "react-proxy",
     "use-current",
     "react-use"
-  ]
+  ],
+  "dependencies": {
+    "vref": "latest"
+  }
 }
