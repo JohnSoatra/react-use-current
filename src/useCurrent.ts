@@ -41,16 +41,18 @@ function useCurrent<T>(initial?: T): Current<T | undefined> {
     (evt) => {
       // Defer to microtask queue to avoid reentrancy issues
       Promise.resolve().then(() => {
+        // console.log('on change', evt);
+        // cache.current.delete(getRaw(rootRef.value))
         const rawRootRef = getRaw(rootRef);
         const rawTarget = getRaw(evt.target);
         const rawParents = findRawParents(rawTarget, cacheParents.current);
 
-        // Clear proxy cache for changed target and its parents
-        cache.current.delete(rawTarget);
-        rawParents.delete(rawRootRef);
-        rawParents.forEach(rawParent => {
-          cache.current.delete(rawParent);
-        });
+        rawParents.has()
+        // // Clear proxy cache for changed target and its parents
+        // cache.current.delete(rawTarget);
+        // rawParents.forEach(rawParent => {
+        //   cache.current.delete(rawParent);
+        // });
 
         // Trigger React re-render
         setSignal(Symbol());
