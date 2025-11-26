@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import ref, { getRaw, Ref } from 'vref';
+import { useMemo, useRef, useState } from 'react';
+import ref, { getRaw } from 'vref';
 import { findRawParents } from './utils';
 import { Current } from './types';
 
@@ -32,41 +32,35 @@ import { Current } from './types';
 function useCurrent<T>(initial: T): Current<T>;
 function useCurrent<T = undefined>(): Current<T | undefined>;
 function useCurrent<T>(initial?: T): Current<T | undefined> {
-  const [signal, setSignal] = useState(Symbol());
+  const [, setSignal] = useState(Symbol());
   const cache = useRef(new WeakMap<object, object>());
   const cacheParents = useRef(new WeakMap<object, Set<any>>());
-  const updated = useRef(new Set<object>());
 
   const rootRef = useMemo(() => ref(
     initial,
     (evt) => {
-      updated.current.add(evt.target);
-      setSignal(Symbol());
+      // Defer to microtask queue to avoid reentrancy issues
+      Promise.resolve().then(() => {
+        const rawRootRef = getRaw(rootRef);
+        const rawTarget = getRaw(evt.target);
+        const rawParents = findRawParents(rawTarget, cacheParents.current);
+
+        // Clear proxy cache for changed target and its parents
+        cache.current.delete(rawTarget);
+        rawParents.delete(rawRootRef);
+        rawParents.forEach(rawParent => {
+          cache.current.delete(rawParent);
+        });
+
+        // Trigger React re-render
+        setSignal(Symbol());
+      });
     },
     {
       cache: cache.current,
       cacheParents: cacheParents.current
     }
   ), []);
-
-  useEffect(() => {
-    return () => {
-      updated.current.forEach(target => {
-        const rawRootRef = getRaw(rootRef);
-        const rawTarget = getRaw(target);
-        const rawParents = findRawParents(
-          rawTarget,
-          cacheParents.current
-        );
-        cache.current.delete(rawTarget);
-        rawParents.delete(rawRootRef);
-        rawParents.forEach(rawParent => {
-          cache.current.delete(rawParent);
-        });
-      });
-      updated.current.clear();
-    }
-  }, [signal]);
 
   return rootRef;
 }
