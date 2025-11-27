@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
-import ref, { getRaw } from 'vref';
-import { findRawParents } from './utils';
+import ref from 'vref';
+import { Tracks } from './data/global';
+import { findParents, updatedAt } from './utils';
 import { Current } from './types';
 
 /**
@@ -39,22 +40,16 @@ function useCurrent<T>(initial?: T): Current<T | undefined> {
   const rootRef = useMemo(() => ref(
     initial,
     (evt) => {
-      // Defer to microtask queue to avoid reentrancy issues
       Promise.resolve().then(() => {
-        // console.log('on change', evt);
-        // cache.current.delete(getRaw(rootRef.value))
-        const rawRootRef = getRaw(rootRef);
-        const rawTarget = getRaw(evt.target);
-        const rawParents = findRawParents(rawTarget, cacheParents.current);
-
-        rawParents.has()
-        // // Clear proxy cache for changed target and its parents
-        // cache.current.delete(rawTarget);
-        // rawParents.forEach(rawParent => {
-        //   cache.current.delete(rawParent);
-        // });
-
-        // Trigger React re-render
+        const target = evt.target;
+        const parents = findParents(target, cacheParents.current);
+        parents.add(rootRef);
+        parents.add(target);
+        parents.forEach(each => {
+          if (Tracks.has(each)) {
+            Tracks.set(each, updatedAt());
+          }
+        });
         setSignal(Symbol());
       });
     },

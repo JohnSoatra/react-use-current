@@ -10,7 +10,7 @@ A minimal React hook for mutable and reactive state.
 // Counter.tsx
 import useCurrent from "react-use-current";
 
-function Counter() {
+export default function Counter() {
   const count = useCurrent(0);
 
   return (
@@ -22,13 +22,24 @@ function Counter() {
 ```
 ```tsx
 // User.tsx
-import useCurrent from "react-use-current";
+import { useEffect, useMemo } from "react";
+import useCurrent, { track } from "react-use-current";
 
-function User() {
+export default function User() {
   const user = useCurrent({
     name: "John",
     age: 25
   });
+
+  // Recomputes whenever user.value changes (deep reactive tracking)
+  const isAdult = useMemo(() => {
+    return user.value.age >= 18;
+  }, [track(user.value)]);
+
+  // Effect runs on any change to user.value (deep mutation-safe)
+  useEffect(() => {
+    console.log("User changed:", user.value);
+  }, [track(user.value)]);
 
   return (
     <div>

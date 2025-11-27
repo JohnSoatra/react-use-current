@@ -1,20 +1,13 @@
 import { isRef } from "vref";
-import Updated from "../updated";
+import { Tracks } from "../data/global";
+import { updatedAt } from ".";
 
-export default function track(target: any) {
+export default function track<T>(target: T) {
   if (isRef(target)) {
-    let updated = Updated.get(target);
-    if (!updated) {
-      updated = {
-        prev: Symbol(),
-        updated: false
-      }
-      Updated.set(target, updated);
+    if (!Tracks.has(target as object)) {
+      Tracks.set(target as object, updatedAt());
     }
-    if (updated.updated) {
-      updated.prev = Symbol();
-    }
-    return updated.prev;
+    return Tracks.get(target as object)!;
   }
   return target;
 }
