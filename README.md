@@ -57,4 +57,18 @@ export default function User() {
 
 ---
 
+### 🎮 Live Playground
+
+<br/>
+<div align="center">
+
+**Play with `react-use-current`:**
+
+👉 <a href="https://stackblitz.com/edit/react-use-current?file=src/App.tsx">Open Live Playground</a>
+
+</div>
+<br/>
+
+---
+
 Simple. Reactive. Synchronous.
