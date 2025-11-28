@@ -1,6 +1,6 @@
 # React Use Current
 
-A minimal React hook for mutable and reactive state.
+A Tiny React hook for synchronous mutable reactive state.
 
 ---
 
@@ -54,20 +54,7 @@ export default function User() {
   );
 }
 ```
-```tsx
-import Counter from "./Counter.tsx";
-import User from "./User.tsx";
-
-export default function App() {
-  return (
-    <>
-      <Counter />
-      <User />
-    </>
-  );
-}
-```
 
 ---
 
-Simple. Mutable. Reactive.
+Simple. Reactive. Synchronous.
