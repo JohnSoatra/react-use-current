@@ -40,18 +40,16 @@ function useCurrent<T>(initial?: T): Current<T | undefined> {
   const rootRef = useMemo(() => ref(
     initial,
     (evt) => {
-      Promise.resolve().then(() => {
-        const target = evt.target;
-        const parents = findParents(target, cacheParents.current);
-        parents.add(rootRef);
-        parents.add(target);
-        parents.forEach(each => {
-          if (Tracks.has(each)) {
-            Tracks.set(each, updatedAt());
-          }
-        });
-        setSignal(Symbol());
+      const target = evt.target;
+      const parents = findParents(target, cacheParents.current);
+      parents.add(rootRef);
+      parents.add(target);
+      parents.forEach(each => {
+        if (Tracks.has(each)) {
+          Tracks.set(each, updatedAt());
+        }
       });
+      setSignal(Symbol());
     },
     {
       cache: cache.current,
