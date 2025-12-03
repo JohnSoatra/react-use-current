@@ -7,7 +7,7 @@ import track from "../utils/track";
  * If a dependency is reactive, `track(dep)` is used so the memoized
  * value recalculates when `.value` changes.
  */
-export default function useComputed<T>(
+export default function useCompute<T>(
   computer: () => T,
   deps: DependencyList
 ) {

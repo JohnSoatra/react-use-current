@@ -7,13 +7,13 @@ import track from "../utils/track";
  * If a dependency is reactive, track(dep) is used so the effect
  * runs whenever its `.value` changes.
  */
-export default function useWatcher(
-  callback: EffectCallback,
+export default function useApply(
+  action: EffectCallback,
   deps?: DependencyList
 ) {
   const trackedDeps = deps?.map(each => isRef(each) ?
     track(each) :
     each
   );
-  return useEffect(callback, trackedDeps);
+  return useEffect(action, trackedDeps);
 }
