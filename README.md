@@ -14,45 +14,68 @@ export default function Counter() {
   const count = useCurrent(0);
 
   return (
-    <button onClick={() => (count.value += 1)}>
-      Count: {count.value}
-    </button>
+    <button onClick={() => (count.value += 1)}>Count: {count.value}</button>
   );
 }
 ```
+
 ```tsx
 // User.tsx
 import { useEffect, useMemo } from "react";
 import useCurrent, { track } from "react-use-current";
 
 export default function User() {
-  const user = useCurrent({
+  const { value: user } = useCurrent({
     name: "John",
-    age: 25
-  });
+    age: 25,
+  }); // descruture if never resigner new user refference
 
-  // Recomputes whenever user.value changes (deep reactive tracking)
+  // Recomputes whenever user changes (deep reactive tracking)
   const isAdult = useMemo(() => {
-    return user.value.age >= 18;
-  }, [track(user.value)]);
+    return user.age >= 18;
+  }, [track(user.age)]); // optional track for pimitive
 
-  // Effect runs on any change to user.value (deep mutation-safe)
+  // Effect runs on any change to user (deep mutation-safe)
   useEffect(() => {
-    console.log("User changed:", user.value);
-  }, [track(user.value)]);
+    console.log("User changed:", user);
+  }, [track(user)]); // must track for reactive object
 
   return (
     <div>
-      <p>{user.value.name} - {user.value.age}</p>
-      <button onClick={() => (user.value.age += 1)}>
-        Increase Age
-      </button>
-      <button onClick={() => (user.value.name = "Doe")}>
-        Change Name
-      </button>
+      <p>
+        {user.name} - {user.age}
+      </p>
+      <button onClick={() => (user.age += 1)}>Increase Age</button>
+      <button onClick={() => (user.name = "Doe")}>Change Name</button>
     </div>
   );
 }
+```
+
+### Auto-Tracking Helpers
+
+#### **useCompute**
+Like useMemo, but automatically tracks dependencies.
+
+```tsx
+import { useCompute } from 'react-use-current';
+
+const isAdult = useCompute(() => {
+  // Auto-tracks `user.age`
+  return user.age >= 18;
+}, [user.age]);
+```
+
+#### **useApply**
+Like useEffect, but automatically tracks dependencies.
+
+```tsx
+import { useApply } from 'react-use-current';
+
+useApply(() => {
+  // Auto-tracks `user`
+  console.log("User changed:", user);
+}, [user]);
 ```
 
 ---
