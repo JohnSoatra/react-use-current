@@ -33,7 +33,7 @@ import { Current } from './types';
 function useCurrent<T>(initial: T): Current<T>;
 function useCurrent<T = undefined>(): Current<T | undefined>;
 function useCurrent<T>(initial?: T): Current<T | undefined> {
-  const [, setSignal] = useState(Symbol());
+  const [, setSignal] = useState<Symbol>();
   const cache = useRef(new WeakMap<object, object>());
   const cacheParents = useRef(new WeakMap<object, Set<any>>());
 

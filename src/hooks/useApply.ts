@@ -1,5 +1,4 @@
 import { DependencyList, EffectCallback, useEffect } from "react";
-import { isRef } from "vref";
 import track from "../utils/track";
 
 /**
@@ -11,9 +10,6 @@ export default function useApply(
   action: EffectCallback,
   deps?: DependencyList
 ) {
-  const trackedDeps = deps?.map(each => isRef(each) ?
-    track(each) :
-    each
-  );
+  const trackedDeps = deps?.map(each => track(each));
   return useEffect(action, trackedDeps);
 }
