@@ -10,7 +10,7 @@
     "url": "https://github.com/JohnSoatra/react-use-current"
   },
   "homepage": "https://doc.soatra.com/react-use-current",
-  "main": "dist/index.cjs.js",
+  "main": "dist/index.cjs.cjs",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [

@@ -9,9 +9,9 @@ import track from "../utils/track";
  * runs whenever its `.value` changes.
  */
 export default function useApply(
-  action: EffectCallback,
+  effect: EffectCallback,
   deps?: DependencyList
 ) {
   const trackedDeps = deps?.map(each => track(each));
-  return useEffect(action, trackedDeps);
+  return useEffect(effect, trackedDeps);
 }

@@ -9,9 +9,9 @@ import track from "../utils/track";
  * value recalculates when `.value` changes.
  */
 export default function useCompute<T>(
-  computer: () => T,
+  factory: () => T,
   deps: DependencyList
 ) {
   const trackedDeps = deps.map(each => track(each));
-  return useMemo(computer, trackedDeps);
+  return useMemo(factory, trackedDeps);
 }
