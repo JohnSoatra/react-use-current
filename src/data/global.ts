@@ -6,7 +6,7 @@ if (!globalAny[Symbols.Tracks]) {
   globalAny[Symbols.Tracks] = new WeakMap();
 } else if (!(globalAny[Symbols.Tracks] instanceof WeakMap)) {
   console.warn(
-    '[useCurrent] Global Tracks key is already used by another library or code, overriding.'
+    '[react-use-current] Global Tracks key is already used by another library or code, overriding.'
   );
   globalAny[Symbols.Tracks] = new WeakMap();
 }

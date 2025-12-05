@@ -22,5 +22,5 @@ export function findParents(
 }
 
 export function updatedAt() {
-  return Symbol(`useCurrent @${new Date().toISOString()}`);
+  return Symbol(`[react-use-current] @${new Date().toISOString()}`);
 }
