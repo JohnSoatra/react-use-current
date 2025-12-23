@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
-import ref from 'vref';
+import { useRef, useState } from 'react';
+import ref, { Ref } from 'vref';
 import { Tracks } from './data/global';
 import { findParents, updatedAt } from './utils';
 import { Current } from './types';
@@ -36,28 +36,31 @@ function useCurrent<T>(initial?: T): Current<T | undefined> {
   const [, setSignal] = useState<Symbol>();
   const cache = useRef(new WeakMap<object, object>());
   const cacheParents = useRef(new WeakMap<object, Set<any>>());
+  const rootRef = useRef(undefined as Ref<T | undefined> | undefined);
 
-  const rootRef = useMemo(() => ref(
-    initial,
-    (evt) => {
-      const target = evt.target;
-      const parents = findParents(target, cacheParents.current);
-      parents.add(rootRef);
-      parents.add(target);
-      parents.forEach(each => {
-        if (Tracks.has(each)) {
-          Tracks.set(each, updatedAt());
-        }
-      });
-      setSignal(Symbol());
-    },
-    {
-      cache: cache.current,
-      cacheParents: cacheParents.current
-    }
-  ), []);
+  if (rootRef.current === undefined) {
+    rootRef.current = ref(
+      initial,
+      (evt) => {
+        const target = evt.target;
+        const parents = findParents(target, cacheParents.current);
+        parents.add(rootRef.current!);
+        parents.add(target);
+        parents.forEach(each => {
+          if (Tracks.has(each)) {
+            Tracks.set(each, updatedAt());
+          }
+        });
+        setSignal(Symbol());
+      },
+      {
+        cache: cache.current,
+        cacheParents: cacheParents.current
+      }
+    );
+  }
 
-  return rootRef;
+  return rootRef.current;
 }
 
 export default useCurrent;
