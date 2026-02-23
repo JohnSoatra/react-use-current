@@ -11,12 +11,14 @@ export function findParents(
 ) {
   const rawTarget = getRaw(target);
   cacheParents.get(rawTarget)?.forEach(parent => {
-    parents.add(parent);
-    findParents(
-      parent,
-      cacheParents,
-      parents
-    );
+    if (!Object.is(parent, target)) {
+      parents.add(parent);
+      findParents(
+        parent,
+        cacheParents,
+        parents
+      );
+    }
   });
   return parents;
 }

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import ref, { Ref } from 'vref';
-import { Tracks } from './data/global';
+import { Tracks } from './data/tracks';
+import { Cache } from './data/catch';
 import { findParents, updatedAt } from './utils';
 import { Current } from './types';
 
@@ -34,7 +35,6 @@ function useCurrent<T>(initial: T): Current<T>;
 function useCurrent<T = undefined>(): Current<T | undefined>;
 function useCurrent<T>(initial?: T): Current<T | undefined> {
   const [, setSignal] = useState<Symbol>();
-  const cache = useRef(new WeakMap<object, object>());
   const cacheParents = useRef(new WeakMap<object, Set<any>>());
   const rootRef = useRef(undefined as Ref<T | undefined> | undefined);
 
@@ -54,7 +54,7 @@ function useCurrent<T>(initial?: T): Current<T | undefined> {
         setSignal(Symbol());
       },
       {
-        cache: cache.current,
+        cache: Cache,
         cacheParents: cacheParents.current
       }
     );

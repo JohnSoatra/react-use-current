@@ -1,5 +1,5 @@
 import { isRef } from "vref";
-import { Tracks } from "../data/global";
+import { Tracks } from "../data/tracks";
 import { updatedAt } from ".";
 
 /**
