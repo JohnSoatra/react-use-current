@@ -1,6 +1,6 @@
 {
   "name": "react-use-current",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "license": "MIT",
   "author": "John Soatra",
   "description": "A Tiny React Hook for Synchronous Reactive State",
