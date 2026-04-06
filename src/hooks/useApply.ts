@@ -1,5 +1,5 @@
 import { DependencyList, EffectCallback, useEffect } from "react";
-import track from "../utils/track";
+import useTrack from "./useTrack";
 
 /**
  * A reactive version of `useEffect`.
@@ -12,6 +12,7 @@ export default function useApply(
   effect: EffectCallback,
   deps?: DependencyList
 ) {
+  const track = useTrack();
   const trackedDeps = deps?.map(each => track(each));
   return useEffect(effect, trackedDeps);
 }

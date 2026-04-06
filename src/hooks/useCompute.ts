@@ -1,5 +1,5 @@
 import { DependencyList, useMemo } from "react";
-import track from "../utils/track";
+import useTrack from "./useTrack";
 
 /**
  * A reactive version of `useMemo`.
@@ -12,6 +12,7 @@ export default function useCompute<T>(
   factory: () => T,
   deps: DependencyList
 ) {
+  const track = useTrack();
   const trackedDeps = deps.map(each => track(each));
   return useMemo(factory, trackedDeps);
 }

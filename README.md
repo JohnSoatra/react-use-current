@@ -22,23 +22,24 @@ export default function Counter() {
 ```tsx
 // User.tsx
 import { useEffect, useMemo } from "react";
-import useCurrent, { track } from "react-use-current";
+import useCurrent, { useTrack } from "react-use-current";
 
 export default function User() {
   const { value: user } = useCurrent({
     name: "John",
     age: 25,
   }); // descruture if never resigner new user refference
+  const track = useTrack(); // provides a function to track changes
 
   // Recomputes whenever user changes (deep reactive tracking)
   const isAdult = useMemo(() => {
     return user.age >= 18;
-  }, [track(user.age)]); // optional track for pimitive
+  }, [track(user.age)]); // tracks changes for user's age
 
   // Effect runs on any change to user (deep mutation-safe)
   useEffect(() => {
     console.log("User changed:", user);
-  }, [track(user)]); // must track for reactive object
+  }, [track(user)]); // tracks changes for whole user
 
   return (
     <div>
